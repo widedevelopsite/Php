@@ -1,1 +1,17 @@
+name: PHP Deployment
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run PHP application
+        run: php index.php
+      - name: Deploy to GitHub Pages
+        uses: gh-pages/deploy@v1
