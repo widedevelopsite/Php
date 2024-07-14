@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,15 +23,12 @@
         video.srcObject = stream;
         video.play();
         this.stream = stream;
-        return window.showDirectoryPicker();
-      })
-      .then(handle => {
-        fileSystem = handle;
-        return fileSystem.requestPermission();
+        return navigator.permissions.query('storage');
       })
       .then(permission => {
         if (permission.state === 'granted') {
           console.log('Permission granted');
+          fileSystem = window.localFileSystem;
         } else {
           console.log('Permission denied');
         }
@@ -48,11 +44,13 @@
       const pic = canvas.toDataURL();
 
       // Store picture in local file system
-      const file = await fileSystem.getNewFileHandle('image.png', { create: true });
-      const writer = await file.createWritable();
-      const blob = await fetch(pic).then(res => res.blob());
-      await writer.write(blob);
-      await writer.close();
+      if (fileSystem) {
+        const file = await fileSystem.getNewFileHandle('image.png', { create: true });
+        const writer = await file.createWritable();
+        const blob = await fetch(pic).then(res => res.blob());
+        await writer.write(blob);
+        await writer.close();
+      }
 
       document.getElementById('taken-pic').src = pic;
       // Stop camera stream
