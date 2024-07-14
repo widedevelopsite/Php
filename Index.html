@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Camera Capture</title>
+  <style>
+    #video {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <video id="video" width="640" height="480"></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+  <img id="taken-pic" src="" alt="Taken Picture">
+  <button id="take-pic">Take Picture</button>
+  <script>
+    let stream;
+
+    // Request camera access
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        video.play();
+        this.stream = stream;
+      })
+      .catch(err => {
+        console.error('Error:', err);
+      });
+
+    // Take picture when button is clicked
+    document.getElementById('take-pic').addEventListener('click', () => {
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, 640, 480);
+      const pic = canvas.toDataURL();
+      document.getElementById('taken-pic').src = pic;
+      // Stop camera stream
+      stream.getVideoTracks()[0].stop();
+    });
+  </script>
+</body>
+</html>
+
