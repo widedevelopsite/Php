@@ -16,23 +16,44 @@
   <button id="take-pic">Take Picture</button>
   <script>
     let stream;
+    let fileSystem;
 
-    // Request camera access
+    // Request camera and storage access
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         video.srcObject = stream;
         video.play();
         this.stream = stream;
+        return window.showDirectoryPicker();
+      })
+      .then(handle => {
+        fileSystem = handle;
+        return fileSystem.requestPermission();
+      })
+      .then(permission => {
+        if (permission.state === 'granted') {
+          console.log('Permission granted');
+        } else {
+          console.log('Permission denied');
+        }
       })
       .catch(err => {
         console.error('Error:', err);
       });
 
     // Take picture when button is clicked
-    document.getElementById('take-pic').addEventListener('click', () => {
+    document.getElementById('take-pic').addEventListener('click', async () => {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, 640, 480);
       const pic = canvas.toDataURL();
+
+      // Store picture in local file system
+      const file = await fileSystem.getNewFileHandle('image.png', { create: true });
+      const writer = await file.createWritable();
+      const blob = await fetch(pic).then(res => res.blob());
+      await writer.write(blob);
+      await writer.close();
+
       document.getElementById('taken-pic').src = pic;
       // Stop camera stream
       stream.getVideoTracks()[0].stop();
@@ -40,4 +61,3 @@
   </script>
 </body>
 </html>
-
